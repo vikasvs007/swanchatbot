@@ -3,13 +3,13 @@ import SwanSorterLogo from "../swan-sorter-logo"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <main className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-card neon-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <SwanSorterLogo size={36} />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <SwanSorterLogo size={36} className="text-primary neon-glow" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
               SwanSorter
             </h1>
           </div>
@@ -31,12 +31,12 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 cyber-grid">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Swan Sorter</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-             it is user interface things
+            <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6 neon-glow">Swan Sorter</h2>
+            <p className="text-xl text-foreground/80 max-w-3xl mx-auto mb-8">
+              Advanced data sorting solutions with futuristic AI technology
             </p>
             {/* <div className="flex justify-center gap-4">
               <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200">

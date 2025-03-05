@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { MessageSquare, X, Send, Phone, Download, MessageCircle, Maximize2, Minimize2 } from "lucide-react"
+import { MessageSquare, X, Send, Phone, Download, MessageCircle, Maximize2, Minimize2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,55 +21,115 @@ const MessageType = {
   SUPPORT: "support",
 }
 
-// Sample product data
-const products = [
-  {
-    id: "1",
-    name: "Premium SwanSorter Pro",
-    description: "Our flagship data sorting solution with advanced features and premium build quality.",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    link: "/products/premium-swansorter",
+// API endpoint for products
+const API_ENDPOINT = "https://crud-backend-a70z.onrender.com/api/products" // Your actual API endpoint
+
+// Languages available for the chatbot
+const languages = {
+  en: {
+  welcome: "Hello! Welcome to SwanSorter. How can I assist you today? You can type 'Product' to see our data sorting solutions, 'Contact' to get our details, 'Enquiry' to submit a request, 'Catalog' to download our catalog, or 'Support' to speak with our team.",
+  productIntro: "Here are our SwanSorter solutions:",
+  contactInfo: "Contact Information",
+  loadingProducts: "Loading products...",
+  enquirySubmitted: "Thank you, {name}! Your enquiry has been submitted. Our team will contact you shortly at {email}.",
+  notUnderstood: "I'm not sure I understand. You can type 'Product', 'Contact', 'Enquiry', 'Catalog', or 'Support' to get started.",
+  submitEnquiry: "Submit an Enquiry",
+  name: "Name",
+  email: "Email",
+  phone: "Phone",
+  message: "Message",
+  required: "required",
+  invalidEmail: "Email is invalid",
+  cancel: "Cancel",
+  submit: "Submit",
+  downloadCatalog: "Download our SwanSorter catalog",
+  catalogDesc: "Our comprehensive product catalog with detailed specifications and pricing.",
+  downloadPDF: "Download PDF",
+  supportTeam: "Connect with our support team",
+  supportDesc: "Our support team is available 24/7 to assist you with any questions or issues.",
+  callNow: "Call Now",
+  liveChat: "Live Chat",
+  learnMore: "Learn More",
+  typeMessage: "Type a message...",
   },
-  {
-    id: "2",
-    name: "SwanSorter Standard",
-    description: "Reliable and cost-effective data sorting for everyday business needs.",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    link: "/products/standard-swansorter",
+  es: {
+    welcome: "¡Hola! Bienvenido a SwanSorter. ¿Cómo puedo ayudarte hoy? Puedes escribir 'Producto' para ver nuestras soluciones de clasificación de datos, 'Contacto' para obtener nuestros detalles, 'Consulta' para enviar una solicitud, 'Catálogo' para descargar nuestro catálogo o 'Soporte' para hablar con nuestro equipo.",
+    productIntro: "Aquí están nuestras soluciones SwanSorter:",
+    contactInfo: "Información de Contacto",
+    loadingProducts: "Cargando productos...",
+    enquirySubmitted: "¡Gracias, {name}! Tu consulta ha sido enviada. Nuestro equipo se pondrá en contacto contigo pronto en {email}.",
+    notUnderstood: "No estoy seguro de entender. Puedes escribir 'Producto', 'Contacto', 'Consulta', 'Catálogo' o 'Soporte' para comenzar.",
+    submitEnquiry: "Enviar una Consulta",
+    name: "Nombre",
+    email: "Correo electrónico",
+    phone: "Teléfono",
+    message: "Mensaje",
+    required: "requerido",
+    invalidEmail: "El correo electrónico no es válido",
+    cancel: "Cancelar",
+    submit: "Enviar",
+    downloadCatalog: "Descarga nuestro catálogo SwanSorter",
+    catalogDesc: "Nuestro catálogo completo de productos con especificaciones detalladas y precios.",
+    downloadPDF: "Descargar PDF",
+    supportTeam: "Conecta con nuestro equipo de soporte",
+    supportDesc: "Nuestro equipo de soporte está disponible 24/7 para ayudarte con cualquier pregunta o problema.",
+    callNow: "Llamar Ahora",
+    liveChat: "Chat en Vivo",
+    learnMore: "Más Información",
+    typeMessage: "Escribe un mensaje...",
   },
-  {
-    id: "3",
-    name: "SwanSorter Lite",
-    description: "Entry-level data sorting solution with essential features for small businesses.",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    link: "/products/lite-swansorter",
-  },
-]
+  fr: {
+    welcome: "Bonjour! Bienvenue à SwanSorter. Comment puis-je vous aider aujourd'hui? Vous pouvez taper 'Produit' pour voir nos solutions de tri de données, 'Contact' pour obtenir nos coordonnées, 'Demande' pour soumettre une requête, 'Catalogue' pour télécharger notre catalogue, ou 'Support' pour parler avec notre équipe.",
+    productIntro: "Voici nos solutions SwanSorter:",
+    contactInfo: "Informations de Contact",
+    loadingProducts: "Chargement des produits...",
+    enquirySubmitted: "Merci, {name}! Votre demande a été soumise. Notre équipe vous contactera bientôt à {email}.",
+    notUnderstood: "Je ne suis pas sûr de comprendre. Vous pouvez taper 'Produit', 'Contact', 'Demande', 'Catalogue', ou 'Support' pour commencer.",
+    submitEnquiry: "Soumettre une Demande",
+    name: "Nom",
+    email: "Email",
+    phone: "Téléphone",
+    message: "Message",
+    required: "requis",
+    invalidEmail: "L'email est invalide",
+    cancel: "Annuler",
+    submit: "Soumettre",
+    downloadCatalog: "Téléchargez notre catalogue SwanSorter",
+    catalogDesc: "Notre catalogue complet de produits avec des spécifications détaillées et des prix.",
+    downloadPDF: "Télécharger PDF",
+    supportTeam: "Connectez-vous avec notre équipe de support",
+    supportDesc: "Notre équipe de support est disponible 24/7 pour vous aider avec toutes questions ou problèmes.",
+    callNow: "Appeler Maintenant",
+    liveChat: "Chat en Direct",
+    learnMore: "En Savoir Plus",
+    typeMessage: "Tapez un message...",
+}
+};
 
 // Form validation function
 const validateForm = (formData) => {
   const errors = {}
-
-  if (!formData.name || formData.name.length < 2) {
-    errors.name = "Name must be at least 2 characters."
+  
+  if (!formData.name.trim()) {
+    errors.name = "Name is required"
   }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!formData.email || !emailRegex.test(formData.email)) {
-    errors.email = "Please enter a valid email address."
+  
+  if (!formData.email.trim()) {
+    errors.email = "Email is required"
+  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    errors.email = "Email is invalid"
   }
-
-  const phoneRegex = /^\d{10}$/
-  if (!formData.phone || !phoneRegex.test(formData.phone)) {
-    errors.phone = "Please enter a valid 10-digit phone number."
+  
+  if (!formData.message.trim()) {
+    errors.message = "Message is required"
   }
-
+  
   return errors
 }
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isLarge, setIsLarge] = useState(false)
+  const [isLarge, setIsLarge] = useState(true)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
   const [showEnquiryForm, setShowEnquiryForm] = useState(false)
@@ -82,6 +142,33 @@ export default function Chatbot() {
   const [formErrors, setFormErrors] = useState({})
   const messagesEndRef = useRef(null)
   const [isTyping, setIsTyping] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [products, setProducts] = useState([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
+  const [currentLanguage, setCurrentLanguage] = useState('en')
+
+  // Initialize language from localStorage or default to English
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') || 'en';
+    setCurrentLanguage(savedLanguage);
+  }, []);
+      
+  // Change language function
+  const changeLanguage = (lang) => {
+    setCurrentLanguage(lang);
+    localStorage.setItem('language', lang);
+    // Refresh welcome message
+    if (messages.length === 1 && messages[0].type === MessageType.BOT) {
+      setMessages([
+        {
+          id: Date.now().toString(),
+          type: MessageType.BOT,
+          content: languages[lang].welcome,
+          timestamp: new Date(),
+        },
+      ]);
+      }
+    };
 
   // Initialize chatbot with welcome message
   useEffect(() => {
@@ -92,20 +179,19 @@ export default function Chatbot() {
           {
             id: Date.now().toString(),
             type: MessageType.BOT,
-            content:
-              "Hello! Welcome to SwanSorter. How can I assist you today? You can type 'Product' to see our data sorting solutions, 'Contact' to get our details, 'Enquiry' to submit a request, 'Catalog' to download our catalog, or 'Support' to speak with our team.",
+            content: languages[currentLanguage].welcome,
             timestamp: new Date(),
           },
         ])
         setIsTyping(false)
       }, 1000)
     }
-  }, [isOpen, messages.length])
+  }, [isOpen, messages.length, currentLanguage])
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [])
+  }, [messages, isTyping])
 
   const toggleChat = () => {
     setIsOpen(!isOpen)
@@ -141,7 +227,7 @@ export default function Chatbot() {
       setTimeout(() => {
         addMessage(
           MessageType.BOT,
-          `Thank you, ${formData.name}! Your enquiry has been submitted. Our team will contact you shortly at ${formData.email}.`,
+          languages[currentLanguage].enquirySubmitted.replace("{name}", formData.name).replace("{email}", formData.email),
         )
         setIsTyping(false)
       }, 1000)
@@ -165,10 +251,33 @@ export default function Chatbot() {
       timestamp: new Date(),
     }
     setMessages((prev) => [...prev, newMessage])
+    }
+
+  // Fetch products from API
+  const fetchProducts = async () => {
+    setIsLoadingProducts(true);
+    try {
+      const response = await fetch(API_ENDPOINT);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Fetched products:", data); // Debug log
+      setProducts(data);
+      setIsLoadingProducts(false);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setIsLoadingProducts(false);
+      // Add error message to chat
+      addMessage(
+        MessageType.BOT,
+        `Sorry, I couldn't fetch the products. Please try again later. (Error: ${error.message})`
+      );
+    }
   }
 
   const handleSendMessage = () => {
-    if (!input.trim()) return
+    if (!input.trim() || isProcessing) return
 
     // Add user message
     addMessage(MessageType.USER, input)
@@ -177,33 +286,49 @@ export default function Chatbot() {
     const userInput = input.toLowerCase()
     setInput("")
 
-    // Show typing indicator
+    // Prevent multiple requests from overlapping
+    setIsProcessing(true)
     setIsTyping(true)
 
     // Handle different commands
     setTimeout(() => {
       setIsTyping(false)
-      if (userInput.includes("product")) {
-        addMessage(MessageType.PRODUCT, "Here are our SwanSorter solutions:")
-      } else if (userInput.includes("contact")) {
-        addMessage(MessageType.CONTACT, "Contact Information")
-      } else if (userInput.includes("enquiry")) {
+      setIsProcessing(false)
+      
+      if (userInput.includes("product") || userInput.includes("producto") || userInput.includes("produit")) {
+        addMessage(MessageType.PRODUCT, languages[currentLanguage].productIntro)
+        fetchProducts();
+      } else if (userInput.includes("contact") || userInput.includes("contacto") || userInput.includes("contact")) {
+        addMessage(MessageType.CONTACT, languages[currentLanguage].contactInfo)
+      } else if (userInput.includes("enquiry") || userInput.includes("consulta") || userInput.includes("demande")) {
         setShowEnquiryForm(true)
-      } else if (userInput.includes("catalog")) {
-        addMessage(MessageType.CATALOG, "Download our SwanSorter catalog")
-      } else if (userInput.includes("support")) {
-        addMessage(MessageType.SUPPORT, "Connect with our support team")
+      } else if (userInput.includes("catalog") || userInput.includes("catálogo") || userInput.includes("catalogue")) {
+        addMessage(MessageType.CATALOG, languages[currentLanguage].downloadCatalog)
+      } else if (userInput.includes("support") || userInput.includes("soporte") || userInput.includes("support")) {
+        addMessage(MessageType.SUPPORT, languages[currentLanguage].supportTeam)
+      } else if (userInput.includes("language") || userInput.includes("idioma") || userInput.includes("langue")) {
+        addMessage(
+          MessageType.BOT,
+          "You can change the language to: English (en), Spanish (es), or French (fr). Type 'en', 'es', or 'fr' to change."
+        )
+      } else if (userInput === "en" || userInput === "es" || userInput === "fr") {
+        changeLanguage(userInput);
+        addMessage(
+          MessageType.BOT,
+          `Language changed to ${userInput === "en" ? "English" : userInput === "es" ? "Spanish" : "French"}.`
+        )
       } else {
         addMessage(
           MessageType.BOT,
-          "I'm not sure I understand. You can type 'Product', 'Contact', 'Enquiry', 'Catalog', or 'Support' to get started.",
+          languages[currentLanguage].notUnderstood,
         )
       }
     }, 1500)
   }
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
       handleSendMessage()
     }
   }
@@ -213,290 +338,265 @@ export default function Chatbot() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Chat toggle button */}
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <Button
-          onClick={toggleChat}
-          className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
-          aria-label={isOpen ? "Close chat" : "Open chat"}
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
-        </Button>
-      </motion.div>
-
-      {/* Chat window */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className={`absolute ${isLarge ? "bottom-20 right-0" : "bottom-16 right-0"}`}
+      <div className="fixed bottom-6 right-6 z-50">
+        {/* Chat toggle button */}
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            onClick={toggleChat}
+            className="rounded-full w-16 h-16 bg-primary hover:bg-primary/90 text-primary-foreground neon-glow shadow-lg"
+            aria-label="Toggle chat"
           >
-            <Card
-              className={`
-              ${isLarge ? "w-[90vw] h-[80vh] max-w-4xl" : "w-80 sm:w-96 h-[500px]"}
-              flex flex-col shadow-2xl overflow-hidden rounded-2xl border-0
-              transition-all duration-300 ease-in-out
-            `}
+            <MessageSquare className="h-7 w-7" />
+          </Button>
+        </motion.div>
+
+        {/* Chat window */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="fixed bottom-24 right-6 overflow-hidden"
+              style={{ 
+                width: isLarge ? 'min(95vw, 800px)' : 'min(90vw, 400px)',
+                height: isLarge ? 'min(85vh, 800px)' : 'min(70vh, 500px)',
+                maxHeight: 'calc(100vh - 120px)'
+              }}
             >
-              {/* Chat header */}
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <SwanSorterLogo size={32} />
-                  <h3 className="font-bold text-black">SwanSorter Support</h3>
+              <Card className="flex flex-col h-full border-primary/30 neon-border bg-card/90 backdrop-blur-sm shadow-xl">
+                {/* Chat header */}
+                <div className="flex items-center justify-between p-4 border-b border-primary/30 bg-secondary">
+                  <div className="flex items-center space-x-2">
+                    <SwanSorterLogo size={24} className="text-primary" />
+                    <h2 className="font-semibold text-foreground">SwanSorter Assistant</h2>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                  {/* Language selector */}
+                  <div className="mr-2">
+                    <select 
+                      value={currentLanguage}
+                      onChange={(e) => changeLanguage(e.target.value)}
+                      className="bg-secondary text-foreground border border-primary/30 rounded p-1 text-sm"
+                    >
+                      <option value="en">🇺🇸 EN</option>
+                      <option value="es">🇪🇸 ES</option>
+                      <option value="fr">🇫🇷 FR</option>
+                    </select>
+                  </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleSize}
+                      className="text-foreground hover:text-primary hover:bg-secondary"
+                      aria-label={isLarge ? "Minimize chat" : "Maximize chat"}
+                    >
+                      {isLarge ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleChat}
+                      className="text-foreground hover:text-primary hover:bg-secondary"
+                      aria-label="Close chat"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleSize}
-                    className="h-8 w-8 text-white hover:bg-white/20"
-                  >
-                    {isLarge ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleChat}
-                    className="h-8 w-8 text-white hover:bg-white/20"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
 
-              {/* Chat messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
-                {messages.map((message) => {
-                  switch (message.type) {
-                    case MessageType.USER:
-                      return (
-                        <motion.div
-                          key={message.id}
-                          className="flex justify-end"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-tr-sm p-3 max-w-[80%] shadow-md">
-                            {message.content}
-                          </div>
-                        </motion.div>
-                      )
-                    case MessageType.BOT:
-                      return (
-                        <motion.div
-                          key={message.id}
-                          className="flex justify-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 max-w-[80%] shadow-md">
-                            {message.content}
-                          </div>
-                        </motion.div>
-                      )
-                    case MessageType.PRODUCT:
-                      return (
-                        <motion.div
-                          key={message.id}
-                          className="flex justify-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 max-w-[90%] w-full shadow-md">
-                            <p className="font-medium mb-3 text-blue-600">{message.content}</p>
-                            <div className={`grid ${isLarge ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-1"} gap-3`}>
-                              {products.map((product) => (
-                                <motion.div
-                                  key={product.id}
-                                  className="border border-gray-200 rounded-xl p-3 flex flex-col gap-3 hover:shadow-md transition-shadow duration-200 bg-gray-50"
-                                  whileHover={{ y: -2 }}
-                                >
-                                  <img
-                                    src={product.imageUrl || "/placeholder.svg"}
-                                    alt={product.name}
-                                    className="h-32 w-full object-cover rounded-lg"
-                                  />
-                                  <div>
-                                    <h4 className="font-medium text-blue-700">{product.name}</h4>
-                                    <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-                                    <a
-                                      href={product.link}
-                                      className="text-sm text-purple-600 hover:text-purple-800 hover:underline mt-2 inline-block font-medium"
-                                    >
-                                      View Details →
-                                    </a>
-                                  </div>
-                                </motion.div>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    case MessageType.CONTACT:
-                      return (
-                        <motion.div
-                          key={message.id}
-                          className="flex justify-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 max-w-[90%] w-full shadow-md">
-                            <p className="font-medium mb-3 text-blue-600">{message.content}</p>
-                            <div className="space-y-2 bg-gray-50 p-3 rounded-xl">
-                              <p>
-                                <span className="font-medium text-gray-700">Phone:</span> +1 (555) 123-4567
-                              </p>
-                              <p>
-                                <span className="font-medium text-gray-700">Email:</span> support@swansorter.com
-                              </p>
-                              <p>
-                                <span className="font-medium text-gray-700">Address:</span> 123 Swan Street, Sorting
-                                City, SC 12345
-                              </p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-2 bg-white hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800"
-                                onClick={() => (window.location.href = "tel:+15551234567")}
+                {/* Chat messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.type === MessageType.USER ? "justify-end" : "justify-start"}`}
                               >
-                                <Phone className="h-4 w-4 mr-2" /> Call Us
-                              </Button>
+                      {message.type === MessageType.PRODUCT ? (
+                        <div className="bg-secondary/50 rounded-lg p-4 max-w-[95%] space-y-4 neon-border">
+                          <p className="text-foreground">{message.content}</p>
+                          {isLoadingProducts ? (
+                            <div className="flex justify-center items-center py-4">
+                              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                              <span className="ml-2 text-foreground">{languages[currentLanguage].loadingProducts}</span>
                             </div>
-                          </div>
-                        </motion.div>
-                      )
-                    case MessageType.CATALOG:
-                      return (
-                        <motion.div
-                          key={message.id}
-                          className="flex justify-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 max-w-[90%] w-full shadow-md">
-                            <p className="font-medium mb-3 text-blue-600">{message.content}</p>
-                            <div className="bg-gray-50 p-4 rounded-xl text-center">
-                              <p className="mb-3 text-gray-600">
-                                Get our complete product catalog with detailed specifications and pricing.
-                              </p>
-                              <div className="flex justify-center items-center h-10">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-100 flex justify-center items-center h-10 w-40"
-                                onClick={() => window.open("VVCE_AIML_VIKASVS.pdf", "_blank")}
-                              >
-                                <Download className="h-5 w-5 mr-" /> Download Catalog
-                              </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    case MessageType.SUPPORT:
-                      return (
-                        <motion.div
-                          key={message.id}
-                          className="flex justify-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 max-w-[90%] w-full shadow-md">
-                            <p className="font-medium mb-3 text-blue-600">{message.content}</p>
-                            <div className="bg-gray-50 p-3 rounded-xl">
-                              <p className="text-sm mb-3 text-gray-600">
-                                Our support team is available Monday-Friday, 9am-5pm EST. Connect with us through:
-                              </p>
-                              <div className="flex gap-2 justify-center">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-100 flex justify-center  h-10 w-40"
-                                  onClick={() => window.open("https://wa.me/15551234567", "_blank")}
-                                >
-                                  WhatsApp
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-100 flex justify-center  h-10 w-40"
-                                  onClick={() => window.open("https://m.me/swansorter", "_blank")}
-                                >
-                                  <MessageCircle className="h-4 w-4 mr-2" /> Messenger
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    default:
-                      return null
-                  }
-                })}
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {products && products.length > 0 ? (
+                                products.map((product) => (
+                                  <div key={product._id} className="bg-card p-3 rounded-md neon-border">
+                                    {product.image_url && (
+                                      <img
+                                        src={product.image_url} 
+                                        alt={product.name} 
+                                        className="w-full h-32 object-cover rounded-md mb-2"
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = "/placeholder.svg?height=100&width=100";
+                                        }}
+                                      />
+                                    )}
+                                    <h3 className="font-semibold text-primary">{product.name}</h3>
+                                    <p className="text-sm text-foreground/80 mt-1 line-clamp-2">{product.description}</p>
+                                    <p className="text-sm text-primary mt-1">{product.price?.toLocaleString() || 'N/A'}</p>
+                                        <Button
+                                      variant="outline"
+                                          size="sm"
+                                      className="mt-2 text-primary border-primary/50 hover:bg-primary/10"
+                                          onClick={() => {
+                                        addMessage(
+                                          MessageType.BOT,
+                                          `You selected ${product.name}. Our team will contact you with more details about this product.`
+                                        );
+                                          }}
+                                        >
+                                          {languages[currentLanguage].learnMore}
+                                        </Button>
 
-                {/* Typing indicator */}
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-2 px-4 max-w-[80%] shadow-md">
-                      <div className="flex space-x-1">
+                                      </div>
+                                ))
+                              ) : (
+                                <div className="col-span-2 text-center p-4">
+                                  <p className="text-foreground">No products found. Please try again later.</p>
+                                    </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : message.type === MessageType.CONTACT ? (
+                        <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
+                          <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
+                          <div className="space-y-2">
+                            <p className="text-foreground flex items-center">
+                              <Phone className="h-4 w-4 mr-2 text-primary" />
+                              +1 (555) 123-4567
+                            </p>
+                            <p className="text-foreground flex items-center">
+                              <MessageCircle className="h-4 w-4 mr-2 text-primary" />
+                              support@swansorter.com
+                            </p>
+                          <Button
+                              variant="outline" 
+                              size="sm" 
+                              className="mt-1 text-primary border-primary/50 hover:bg-primary/10"
+                            onClick={() => {
+                                window.open('tel:+15551234567', '_blank');
+                            }}
+                          >
+                            {languages[currentLanguage].callNow}
+                          </Button>
+                          </div>
+                        </div>
+                      ) : message.type === MessageType.CATALOG ? (
+                        <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
+                          <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
+                          <p className="text-foreground mb-3">
+                            {languages[currentLanguage].catalogDesc}
+                          </p>
+                          <Button 
+                            variant="outline" 
+                            className="text-primary border-primary/50 hover:bg-primary/10"
+                            onClick={() => {
+                              // Simulate catalog download
+                              addMessage(
+                                MessageType.BOT,
+                                "Your catalog download has started. You'll receive it shortly."
+                              );
+                              // In a real app, you would trigger an actual download here
+                              setTimeout(() => {
+                                window.open('VVCE_AIML_VIKASVS.pdf', '_blank');
+                              }, 1500);
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            {languages[currentLanguage].downloadPDF}
+                          </Button>
+                        </div>
+                      ) : message.type === MessageType.SUPPORT ? (
+                        <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
+                          <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
+                          <p className="text-foreground mb-3">
+                            {languages[currentLanguage].supportDesc}
+                          </p>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              className="text-primary border-primary/50 hover:bg-primary/10"
+                              onClick={() => {
+                                window.open('tel:+15551234567', '_blank');
+                              }}
+                            >
+                              <Phone className="h-4 w-4 mr-2" />
+                              {languages[currentLanguage].callNow}
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              className="text-primary border-primary/50 hover:bg-primary/10"
+                              onClick={() => {
+                                addMessage(
+                                  MessageType.BOT,
+                                  "Connecting you to live chat. A support agent will be with you shortly."
+                                );
+                                // In a real app, you would open a live chat widget here
+                              }}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              {languages[currentLanguage].liveChat}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
                         <div
-                          className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
-                          style={{ animationDelay: "0ms" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
-                          style={{ animationDelay: "150ms" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
-                          style={{ animationDelay: "300ms" }}
-                        ></div>
+                          className={`rounded-lg p-3 max-w-[85%] ${
+                            message.type === MessageType.USER
+                              ? "bg-primary text-primary-foreground ml-auto"
+                              : "bg-secondary/50 text-foreground neon-border"
+                          }`}
+                        >
+                          <p>{message.content}</p>
+                          <p className="text-xs opacity-70 mt-1">
+                            {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Typing indicator */}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="bg-secondary/50 rounded-lg p-3 max-w-[85%] neon-border">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                          <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                          <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Enquiry form */}
-                {showEnquiryForm && (
-                  <motion.div
-                    className="flex justify-start"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-4 max-w-[90%] w-full shadow-md">
-                    <h4 className="font-bold mb-3 text-blue-600">Enquiry Form</h4>
-                    <div className="space-y-3">
+                  {/* Enquiry form */}
+                  {showEnquiryForm && (
+                    <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
+                      <h3 className="font-semibold text-primary mb-3">{languages[currentLanguage].submitEnquiry}</h3>
+                      <div className="space-y-3">
                         <div>
-                          <Label htmlFor="name" className="text-black-700">
-                            Name
+                          <Label htmlFor="name" className="text-foreground">
+                            {languages[currentLanguage].name} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="name"
                             name="name"
                             value={formData.name}
                             onChange={handleFormChange}
-                            className={
-                              formErrors.name
-                                ? "border-red-300 focus:ring-red-500"
-                                : "border-gray-200 focus:ring-blue-500"
-                            }
+                            className="bg-card/50 border-primary/30 text-foreground"
                           />
-                          {formErrors.name && <p className="text-xs text-red-500 mt-1">{formErrors.name}</p>}
+                          {formErrors.name && <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>}
                         </div>
                         <div>
-                          <Label htmlFor="email" className="text-gray-700">
-                            Email
+                          <Label htmlFor="email" className="text-foreground">
+                            {languages[currentLanguage].email} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="email"
@@ -504,93 +604,86 @@ export default function Chatbot() {
                             type="email"
                             value={formData.email}
                             onChange={handleFormChange}
-                            className={
-                              formErrors.email
-                                ? "border-red-300 focus:ring-red-500"
-                                : "border-gray-200 focus:ring-blue-500"
-                            }
+                            className="bg-card/50 border-primary/30 text-foreground"
                           />
-                          {formErrors.email && <p className="text-xs text-red-500 mt-1">{formErrors.email}</p>}
+                          {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
                         </div>
                         <div>
-                          <Label htmlFor="phone" className="text-gray-700">
-                            Phone Number
+                          <Label htmlFor="phone" className="text-foreground">
+                            {languages[currentLanguage].phone}
                           </Label>
                           <Input
                             id="phone"
                             name="phone"
+                            type="tel"
                             value={formData.phone}
                             onChange={handleFormChange}
-                            className={
-                              formErrors.phone
-                                ? "border-red-300 focus:ring-red-500"
-                                : "border-gray-200 focus:ring-blue-500"
-                            }
+                            className="bg-card/50 border-primary/30 text-foreground"
                           />
-                          {formErrors.phone && <p className="text-xs text-red-500 mt-1">{formErrors.phone}</p>}
                         </div>
                         <div>
-                          <Label htmlFor="message" className="text-gray-700">
-                            Message (Optional)
+                          <Label htmlFor="message" className="text-foreground">
+                            {languages[currentLanguage].message} <span className="text-red-500">*</span>
                           </Label>
                           <Textarea
                             id="message"
                             name="message"
                             value={formData.message}
                             onChange={handleFormChange}
+                            className="bg-card/50 border-primary/30 text-foreground"
                             rows={3}
-                            className="border-black-200 focus:ring-blue-500"
                           />
+                          {formErrors.message && <p className="text-red-500 text-xs mt-1">{formErrors.message}</p>}
                         </div>
-                        <div className="flex justify-end gap-2 pt-2">
+                        <div className="flex justify-end space-x-2">
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={() => setShowEnquiryForm(false)}
-                            className="rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-100 flex justify-center  h-10 w-20"
-                            >
-                            Cancel
+                            className="border-primary/30 text-foreground hover:bg-secondary"
+                          >
+                            {languages[currentLanguage].cancel}
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={handleSubmitEnquiry}
-                            className="rounded-full bg-gradient-to-r from-blue-500 to-green-600 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-100 flex justify-center  h-10 w-20"
-                            >
-                            Submit
+                          <Button onClick={handleSubmitEnquiry} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                            {languages[currentLanguage].submit}
                           </Button>
                         </div>
                       </div>
                     </div>
-                  </motion.div>
-                )}
+                  )}
 
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Chat input */}
-              <div className="p-5 border-t border-gray-200 bg-white">
-                <div className="flex gap-2">
-                  <Input
-                    value={input}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type a message..."
-                    className="flex-1 border-gray-200 focus:ring-blue-500 rounded-full py-2 px-4 flex justify-center items-center"
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    size="icon"
-                    className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-100 flex justify-center  h-10 w-20"
-                  >
-                    <Send className="" />
-                  </Button>
+                  {/* Invisible element for auto-scrolling */}
+                  <div ref={messagesEndRef} />
                 </div>
-              </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+
+                {/* Chat input */}
+                <div className="p-4 border-t border-primary/30 bg-card">
+                  <div className="flex space-x-2">
+                    <Input
+                      value={input}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      placeholder={languages[currentLanguage].typeMessage}
+                      className="bg-secondary/30 border-primary/30 text-foreground"
+                      disabled={isProcessing}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!input.trim() || isProcessing}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
   )
 }
 

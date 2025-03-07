@@ -15,12 +15,24 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['fakestoreapi.com', 'placehold.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'fakestoreapi.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      }
+    ]
   },
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  output: 'standalone',
 }
 
 mergeConfig(nextConfig, userConfig)

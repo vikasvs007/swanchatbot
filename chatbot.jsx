@@ -1,131 +1,28 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { MessageSquare, X, Send, Phone, Download, MessageCircle, Maximize2, Minimize2, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import { motion, AnimatePresence } from "framer-motion"
+import Script from "next/script"
+import {
+  MessageSquare,
+  X,
+  Maximize2,
+  Minimize2,
+  Send,
+  Download,
+  Phone,
+  MessageCircle,
+  Loader2,
+  Volume2,
+  VolumeX,
+} from "lucide-react"
+import { Button } from "./components/ui/button"
+import { Card } from "./components/ui/card"
+import { Input } from "./components/ui/input"
+import { Textarea } from "./components/ui/textarea"
+import { Label } from "./components/ui/label"
 import SwanSorterLogo from "./swan-sorter-logo"
-
-// Define message types
-const MessageType = {
-  USER: "user",
-  BOT: "bot",
-  PRODUCT: "product",
-  CONTACT: "contact",
-  ENQUIRY: "enquiry",
-  CATALOG: "catalog",
-  SUPPORT: "support",
-}
-
-// API endpoint for products
-const API_ENDPOINT = "https://crud-backend-a70z.onrender.com/api/products" // Your actual API endpoint
-
-// Languages available for the chatbot
-const languages = {
-  en: {
-  welcome: "Hello! Welcome to SwanSorter. How can I assist you today? You can type 'Product' to see our data sorting solutions, 'Contact' to get our details, 'Enquiry' to submit a request, 'Catalog' to download our catalog, or 'Support' to speak with our team.",
-  productIntro: "Here are our SwanSorter solutions:",
-  contactInfo: "Contact Information",
-  loadingProducts: "Loading products...",
-  enquirySubmitted: "Thank you, {name}! Your enquiry has been submitted. Our team will contact you shortly at {email}.",
-  notUnderstood: "I'm not sure I understand. You can type 'Product', 'Contact', 'Enquiry', 'Catalog', or 'Support' to get started.",
-  submitEnquiry: "Submit an Enquiry",
-  name: "Name",
-  email: "Email",
-  phone: "Phone",
-  message: "Message",
-  required: "required",
-  invalidEmail: "Email is invalid",
-  cancel: "Cancel",
-  submit: "Submit",
-  downloadCatalog: "Download our SwanSorter catalog",
-  catalogDesc: "Our comprehensive product catalog with detailed specifications and pricing.",
-  downloadPDF: "Download PDF",
-  supportTeam: "Connect with our support team",
-  supportDesc: "Our support team is available 24/7 to assist you with any questions or issues.",
-  callNow: "Call Now",
-  liveChat: "Live Chat",
-  learnMore: "Learn More",
-  typeMessage: "Type a message...",
-  },
-  es: {
-    welcome: "¡Hola! Bienvenido a SwanSorter. ¿Cómo puedo ayudarte hoy? Puedes escribir 'Producto' para ver nuestras soluciones de clasificación de datos, 'Contacto' para obtener nuestros detalles, 'Consulta' para enviar una solicitud, 'Catálogo' para descargar nuestro catálogo o 'Soporte' para hablar con nuestro equipo.",
-    productIntro: "Aquí están nuestras soluciones SwanSorter:",
-    contactInfo: "Información de Contacto",
-    loadingProducts: "Cargando productos...",
-    enquirySubmitted: "¡Gracias, {name}! Tu consulta ha sido enviada. Nuestro equipo se pondrá en contacto contigo pronto en {email}.",
-    notUnderstood: "No estoy seguro de entender. Puedes escribir 'Producto', 'Contacto', 'Consulta', 'Catálogo' o 'Soporte' para comenzar.",
-    submitEnquiry: "Enviar una Consulta",
-    name: "Nombre",
-    email: "Correo electrónico",
-    phone: "Teléfono",
-    message: "Mensaje",
-    required: "requerido",
-    invalidEmail: "El correo electrónico no es válido",
-    cancel: "Cancelar",
-    submit: "Enviar",
-    downloadCatalog: "Descarga nuestro catálogo SwanSorter",
-    catalogDesc: "Nuestro catálogo completo de productos con especificaciones detalladas y precios.",
-    downloadPDF: "Descargar PDF",
-    supportTeam: "Conecta con nuestro equipo de soporte",
-    supportDesc: "Nuestro equipo de soporte está disponible 24/7 para ayudarte con cualquier pregunta o problema.",
-    callNow: "Llamar Ahora",
-    liveChat: "Chat en Vivo",
-    learnMore: "Más Información",
-    typeMessage: "Escribe un mensaje...",
-  },
-  fr: {
-    welcome: "Bonjour! Bienvenue à SwanSorter. Comment puis-je vous aider aujourd'hui? Vous pouvez taper 'Produit' pour voir nos solutions de tri de données, 'Contact' pour obtenir nos coordonnées, 'Demande' pour soumettre une requête, 'Catalogue' pour télécharger notre catalogue, ou 'Support' pour parler avec notre équipe.",
-    productIntro: "Voici nos solutions SwanSorter:",
-    contactInfo: "Informations de Contact",
-    loadingProducts: "Chargement des produits...",
-    enquirySubmitted: "Merci, {name}! Votre demande a été soumise. Notre équipe vous contactera bientôt à {email}.",
-    notUnderstood: "Je ne suis pas sûr de comprendre. Vous pouvez taper 'Produit', 'Contact', 'Demande', 'Catalogue', ou 'Support' pour commencer.",
-    submitEnquiry: "Soumettre une Demande",
-    name: "Nom",
-    email: "Email",
-    phone: "Téléphone",
-    message: "Message",
-    required: "requis",
-    invalidEmail: "L'email est invalide",
-    cancel: "Annuler",
-    submit: "Soumettre",
-    downloadCatalog: "Téléchargez notre catalogue SwanSorter",
-    catalogDesc: "Notre catalogue complet de produits avec des spécifications détaillées et des prix.",
-    downloadPDF: "Télécharger PDF",
-    supportTeam: "Connectez-vous avec notre équipe de support",
-    supportDesc: "Notre équipe de support est disponible 24/7 pour vous aider avec toutes questions ou problèmes.",
-    callNow: "Appeler Maintenant",
-    liveChat: "Chat en Direct",
-    learnMore: "En Savoir Plus",
-    typeMessage: "Tapez un message...",
-}
-};
-
-// Form validation function
-const validateForm = (formData) => {
-  const errors = {}
-  
-  if (!formData.name.trim()) {
-    errors.name = "Name is required"
-  }
-  
-  if (!formData.email.trim()) {
-    errors.email = "Email is required"
-  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-    errors.email = "Email is invalid"
-  }
-  
-  if (!formData.message.trim()) {
-    errors.message = "Message is required"
-  }
-  
-  return errors
-}
+import { MessageType, defaultStrings, validateForm, API_ENDPOINT } from "./constants"
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false)
@@ -439,7 +336,7 @@ export default function Chatbot() {
                                     )}
                                     <h3 className="font-semibold text-primary">{product.name}</h3>
                                     <p className="text-sm text-foreground/80 mt-1 line-clamp-2">{product.description}</p>
-                                    <p className="text-sm text-primary mt-1">{product.price?.toLocaleString() || 'N/A'}</p>
+                                    <p className="text-sm text-primary mt-1">₹{product.price?.toLocaleString() || 'N/A'}</p>
                                         <Button
                                       variant="outline"
                                           size="sm"

@@ -2,9 +2,11 @@ services:
   - type: web
     name: swanchatbot
     env: node
+    plan: free
     buildCommand: npm install && npm run build
     startCommand: npm start
     nodeVersion: 18.x
     envVars:
       - key: NODE_ENV
-        value: production 
+        value: production
+    autoDeploy: true 

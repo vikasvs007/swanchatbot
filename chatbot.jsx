@@ -109,7 +109,7 @@ const languages = {
 // Form validation function
 const validateForm = (formData) => {
   const errors = {}
-  
+
   if (!formData.name.trim()) {
     errors.name = "Name is required"
   }
@@ -123,7 +123,7 @@ const validateForm = (formData) => {
   if (!formData.message.trim()) {
     errors.message = "Message is required"
   }
-  
+
   return errors
 }
 
@@ -339,25 +339,25 @@ export default function Chatbot() {
 
   return (
       <div className="fixed bottom-6 right-6 z-50">
-        {/* Chat toggle button */}
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            onClick={toggleChat}
+      {/* Chat toggle button */}
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Button
+          onClick={toggleChat}
             className="rounded-full w-16 h-16 bg-primary hover:bg-primary/90 text-primary-foreground neon-glow shadow-lg"
             aria-label="Toggle chat"
-          >
+        >
             <MessageSquare className="h-7 w-7" />
-          </Button>
-        </motion.div>
+        </Button>
+      </motion.div>
 
-        {/* Chat window */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+      {/* Chat window */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
               className="fixed bottom-24 right-6 overflow-hidden"
               style={{ 
                 width: isLarge ? 'min(95vw, 800px)' : 'min(90vw, 400px)',
@@ -366,7 +366,7 @@ export default function Chatbot() {
               }}
             >
               <Card className="flex flex-col h-full border-primary/30 neon-border bg-card/90 backdrop-blur-sm shadow-xl">
-                {/* Chat header */}
+              {/* Chat header */}
                 <div className="flex items-center justify-between p-4 border-b border-primary/30 bg-secondary">
                   <div className="flex items-center space-x-2">
                     <SwanSorterLogo size={24} className="text-primary" />
@@ -384,33 +384,33 @@ export default function Chatbot() {
                       <option value="es">🇪🇸 ES</option>
                       <option value="fr">🇫🇷 FR</option>
                     </select>
-                  </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={toggleSize}
+                </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleSize}
                       className="text-foreground hover:text-primary hover:bg-secondary"
                       aria-label={isLarge ? "Minimize chat" : "Maximize chat"}
-                    >
-                      {isLarge ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={toggleChat}
+                  >
+                    {isLarge ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleChat}
                       className="text-foreground hover:text-primary hover:bg-secondary"
                       aria-label="Close chat"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
+              </div>
 
-                {/* Chat messages */}
+              {/* Chat messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {messages.map((message) => (
                     <div
-                      key={message.id}
+                          key={message.id}
                       className={`flex ${message.type === MessageType.USER ? "justify-end" : "justify-start"}`}
                               >
                       {message.type === MessageType.PRODUCT ? (
@@ -420,7 +420,7 @@ export default function Chatbot() {
                             <div className="flex justify-center items-center py-4">
                               <Loader2 className="h-6 w-6 animate-spin text-primary" />
                               <span className="ml-2 text-foreground">{languages[currentLanguage].loadingProducts}</span>
-                            </div>
+                          </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               {products && products.length > 0 ? (
@@ -429,7 +429,7 @@ export default function Chatbot() {
                                     {product.image_url && (
                                       <img
                                         src={product.image_url} 
-                                        alt={product.name} 
+                                    alt={product.name}
                                         className="w-full h-32 object-cover rounded-md mb-2"
                                         onError={(e) => {
                                           e.target.onerror = null;
@@ -459,11 +459,11 @@ export default function Chatbot() {
                               ) : (
                                 <div className="col-span-2 text-center p-4">
                                   <p className="text-foreground">No products found. Please try again later.</p>
-                                    </div>
+                                  </div>
                               )}
                             </div>
                           )}
-                        </div>
+                          </div>
                       ) : message.type === MessageType.CONTACT ? (
                         <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
                           <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
@@ -475,27 +475,27 @@ export default function Chatbot() {
                             <p className="text-foreground flex items-center">
                               <MessageCircle className="h-4 w-4 mr-2 text-primary" />
                               support@swansorter.com
-                            </p>
-                          <Button
-                              variant="outline" 
-                              size="sm" 
+                              </p>
+                              <Button
+                                variant="outline"
+                                size="sm"
                               className="mt-1 text-primary border-primary/50 hover:bg-primary/10"
                             onClick={() => {
                                 window.open('tel:+15551234567', '_blank');
                             }}
                           >
                             {languages[currentLanguage].callNow}
-                          </Button>
+                              </Button>
+                            </div>
                           </div>
-                        </div>
                       ) : message.type === MessageType.CATALOG ? (
                         <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
                           <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
                           <p className="text-foreground mb-3">
                             {languages[currentLanguage].catalogDesc}
                           </p>
-                          <Button 
-                            variant="outline" 
+                              <Button
+                                variant="outline"
                             className="text-primary border-primary/50 hover:bg-primary/10"
                             onClick={() => {
                               // Simulate catalog download
@@ -511,8 +511,8 @@ export default function Chatbot() {
                           >
                             <Download className="h-4 w-4 mr-2" />
                             {languages[currentLanguage].downloadPDF}
-                          </Button>
-                        </div>
+                              </Button>
+                              </div>
                       ) : message.type === MessageType.SUPPORT ? (
                         <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
                           <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
@@ -520,8 +520,8 @@ export default function Chatbot() {
                             {languages[currentLanguage].supportDesc}
                           </p>
                           <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
+                                <Button
+                                  variant="outline"
                               className="text-primary border-primary/50 hover:bg-primary/10"
                               onClick={() => {
                                 window.open('tel:+15551234567', '_blank');
@@ -529,9 +529,9 @@ export default function Chatbot() {
                             >
                               <Phone className="h-4 w-4 mr-2" />
                               {languages[currentLanguage].callNow}
-                            </Button>
-                            <Button 
-                              variant="outline"
+                                </Button>
+                                <Button
+                                  variant="outline"
                               className="text-primary border-primary/50 hover:bg-primary/10"
                               onClick={() => {
                                 addMessage(
@@ -543,9 +543,9 @@ export default function Chatbot() {
                             >
                               <MessageCircle className="h-4 w-4 mr-2" />
                               {languages[currentLanguage].liveChat}
-                            </Button>
-                          </div>
-                        </div>
+                                </Button>
+                              </div>
+                            </div>
                       ) : (
                         <div
                           className={`rounded-lg p-3 max-w-[85%] ${
@@ -560,27 +560,27 @@ export default function Chatbot() {
                           </p>
                         </div>
                       )}
-                    </div>
+                          </div>
                   ))}
 
-                  {/* Typing indicator */}
-                  {isTyping && (
-                    <div className="flex justify-start">
+                {/* Typing indicator */}
+                {isTyping && (
+                  <div className="flex justify-start">
                       <div className="bg-secondary/50 rounded-lg p-3 max-w-[85%] neon-border">
-                        <div className="flex space-x-1">
+                      <div className="flex space-x-1">
                           <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }}></div>
                           <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }}></div>
                           <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }}></div>
                         </div>
-                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {/* Enquiry form */}
-                  {showEnquiryForm && (
+                {/* Enquiry form */}
+                {showEnquiryForm && (
                     <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
                       <h3 className="font-semibold text-primary mb-3">{languages[currentLanguage].submitEnquiry}</h3>
-                      <div className="space-y-3">
+                    <div className="space-y-3">
                         <div>
                           <Label htmlFor="name" className="text-foreground">
                             {languages[currentLanguage].name} <span className="text-red-500">*</span>
@@ -640,7 +640,7 @@ export default function Chatbot() {
                             variant="outline"
                             onClick={() => setShowEnquiryForm(false)}
                             className="border-primary/30 text-foreground hover:bg-secondary"
-                          >
+                            >
                             {languages[currentLanguage].cancel}
                           </Button>
                           <Button onClick={handleSubmitEnquiry} className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -649,25 +649,25 @@ export default function Chatbot() {
                         </div>
                       </div>
                     </div>
-                  )}
+                )}
 
                   {/* Invisible element for auto-scrolling */}
-                  <div ref={messagesEndRef} />
-                </div>
+                <div ref={messagesEndRef} />
+              </div>
 
-                {/* Chat input */}
+              {/* Chat input */}
                 <div className="p-4 border-t border-primary/30 bg-card">
                   <div className="flex space-x-2">
-                    <Input
-                      value={input}
-                      onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
+                  <Input
+                    value={input}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
                       placeholder={languages[currentLanguage].typeMessage}
                       className="bg-secondary/30 border-primary/30 text-foreground"
                       disabled={isProcessing}
-                    />
-                    <Button
-                      onClick={handleSendMessage}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
                       disabled={!input.trim() || isProcessing}
                       className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                     >
@@ -676,14 +676,14 @@ export default function Chatbot() {
                       ) : (
                         <Send className="h-4 w-4" />
                       )}
-                    </Button>
-                  </div>
+                  </Button>
                 </div>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 

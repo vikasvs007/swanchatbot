@@ -1,5 +1,7 @@
-import Chatbot from "../chatbot"
-import SwanSorterLogo from "../swan-sorter-logo"
+import dynamic from 'next/dynamic'
+
+const Chatbot = dynamic(() => import('../components/Chatbot'), { ssr: false })
+const SwanSorterLogo = dynamic(() => import('../components/SwanSorterLogo'), { ssr: false })
 
 export default function Home() {
   return (

@@ -7,7 +7,6 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -17,8 +16,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  poweredByHeader: false,
-  reactStrictMode: true,
+  experimental: {
+    webpackBuildWorker: true,
+    parallelServerBuildTraces: true,
+    parallelServerCompiles: true,
+  },
 }
 
 mergeConfig(nextConfig, userConfig)

@@ -1,131 +1,28 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { MessageSquare, X, Send, Phone, Download, MessageCircle, Maximize2, Minimize2, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import { motion, AnimatePresence } from "framer-motion"
+import Script from "next/script"
+import {
+  MessageSquare,
+  X,
+  Maximize2,
+  Minimize2,
+  Send,
+  Download,
+  Phone,
+  MessageCircle,
+  Loader2,
+  Volume2,
+  VolumeX,
+} from "lucide-react"
+import { Button } from "./components/ui/button"
+import { Card } from "./components/ui/card"
+import { Input } from "./components/ui/input"
+import { Textarea } from "./components/ui/textarea"
+import { Label } from "./components/ui/label"
 import SwanSorterLogo from "./swan-sorter-logo"
-
-// Define message types
-const MessageType = {
-  USER: "user",
-  BOT: "bot",
-  PRODUCT: "product",
-  CONTACT: "contact",
-  ENQUIRY: "enquiry",
-  CATALOG: "catalog",
-  SUPPORT: "support",
-}
-
-// API endpoint for products
-const API_ENDPOINT = "https://crud-backend-a70z.onrender.com/api/products" // Your actual API endpoint
-
-// Languages available for the chatbot
-const languages = {
-  en: {
-  welcome: "Hello! Welcome to SwanSorter. How can I assist you today? You can type 'Product' to see our data sorting solutions, 'Contact' to get our details, 'Enquiry' to submit a request, 'Catalog' to download our catalog, or 'Support' to speak with our team.",
-  productIntro: "Here are our SwanSorter solutions:",
-  contactInfo: "Contact Information",
-  loadingProducts: "Loading products...",
-  enquirySubmitted: "Thank you, {name}! Your enquiry has been submitted. Our team will contact you shortly at {email}.",
-  notUnderstood: "I'm not sure I understand. You can type 'Product', 'Contact', 'Enquiry', 'Catalog', or 'Support' to get started.",
-  submitEnquiry: "Submit an Enquiry",
-  name: "Name",
-  email: "Email",
-  phone: "Phone",
-  message: "Message",
-  required: "required",
-  invalidEmail: "Email is invalid",
-  cancel: "Cancel",
-  submit: "Submit",
-  downloadCatalog: "Download our SwanSorter catalog",
-  catalogDesc: "Our comprehensive product catalog with detailed specifications and pricing.",
-  downloadPDF: "Download PDF",
-  supportTeam: "Connect with our support team",
-  supportDesc: "Our support team is available 24/7 to assist you with any questions or issues.",
-  callNow: "Call Now",
-  liveChat: "Live Chat",
-  learnMore: "Learn More",
-  typeMessage: "Type a message...",
-  },
-  es: {
-    welcome: "¡Hola! Bienvenido a SwanSorter. ¿Cómo puedo ayudarte hoy? Puedes escribir 'Producto' para ver nuestras soluciones de clasificación de datos, 'Contacto' para obtener nuestros detalles, 'Consulta' para enviar una solicitud, 'Catálogo' para descargar nuestro catálogo o 'Soporte' para hablar con nuestro equipo.",
-    productIntro: "Aquí están nuestras soluciones SwanSorter:",
-    contactInfo: "Información de Contacto",
-    loadingProducts: "Cargando productos...",
-    enquirySubmitted: "¡Gracias, {name}! Tu consulta ha sido enviada. Nuestro equipo se pondrá en contacto contigo pronto en {email}.",
-    notUnderstood: "No estoy seguro de entender. Puedes escribir 'Producto', 'Contacto', 'Consulta', 'Catálogo' o 'Soporte' para comenzar.",
-    submitEnquiry: "Enviar una Consulta",
-    name: "Nombre",
-    email: "Correo electrónico",
-    phone: "Teléfono",
-    message: "Mensaje",
-    required: "requerido",
-    invalidEmail: "El correo electrónico no es válido",
-    cancel: "Cancelar",
-    submit: "Enviar",
-    downloadCatalog: "Descarga nuestro catálogo SwanSorter",
-    catalogDesc: "Nuestro catálogo completo de productos con especificaciones detalladas y precios.",
-    downloadPDF: "Descargar PDF",
-    supportTeam: "Conecta con nuestro equipo de soporte",
-    supportDesc: "Nuestro equipo de soporte está disponible 24/7 para ayudarte con cualquier pregunta o problema.",
-    callNow: "Llamar Ahora",
-    liveChat: "Chat en Vivo",
-    learnMore: "Más Información",
-    typeMessage: "Escribe un mensaje...",
-  },
-  fr: {
-    welcome: "Bonjour! Bienvenue à SwanSorter. Comment puis-je vous aider aujourd'hui? Vous pouvez taper 'Produit' pour voir nos solutions de tri de données, 'Contact' pour obtenir nos coordonnées, 'Demande' pour soumettre une requête, 'Catalogue' pour télécharger notre catalogue, ou 'Support' pour parler avec notre équipe.",
-    productIntro: "Voici nos solutions SwanSorter:",
-    contactInfo: "Informations de Contact",
-    loadingProducts: "Chargement des produits...",
-    enquirySubmitted: "Merci, {name}! Votre demande a été soumise. Notre équipe vous contactera bientôt à {email}.",
-    notUnderstood: "Je ne suis pas sûr de comprendre. Vous pouvez taper 'Produit', 'Contact', 'Demande', 'Catalogue', ou 'Support' pour commencer.",
-    submitEnquiry: "Soumettre une Demande",
-    name: "Nom",
-    email: "Email",
-    phone: "Téléphone",
-    message: "Message",
-    required: "requis",
-    invalidEmail: "L'email est invalide",
-    cancel: "Annuler",
-    submit: "Soumettre",
-    downloadCatalog: "Téléchargez notre catalogue SwanSorter",
-    catalogDesc: "Notre catalogue complet de produits avec des spécifications détaillées et des prix.",
-    downloadPDF: "Télécharger PDF",
-    supportTeam: "Connectez-vous avec notre équipe de support",
-    supportDesc: "Notre équipe de support est disponible 24/7 pour vous aider avec toutes questions ou problèmes.",
-    callNow: "Appeler Maintenant",
-    liveChat: "Chat en Direct",
-    learnMore: "En Savoir Plus",
-    typeMessage: "Tapez un message...",
-}
-};
-
-// Form validation function
-const validateForm = (formData) => {
-  const errors = {}
-  
-  if (!formData.name.trim()) {
-    errors.name = "Name is required"
-  }
-  
-  if (!formData.email.trim()) {
-    errors.email = "Email is required"
-  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-    errors.email = "Email is invalid"
-  }
-  
-  if (!formData.message.trim()) {
-    errors.message = "Message is required"
-  }
-  
-  return errors
-}
+import { MessageType, defaultStrings, validateForm, API_ENDPOINT } from "./constants"
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false)
@@ -145,30 +42,48 @@ export default function Chatbot() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [products, setProducts] = useState([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
-  const [currentLanguage, setCurrentLanguage] = useState('en')
+  const translateElementRef = useRef(null)
+  const [isTtsEnabled, setIsTtsEnabled] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const speechSynthesisRef = useRef(null)
 
-  // Initialize language from localStorage or default to English
+  // Initialize Google Translate
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') || 'en';
-    setCurrentLanguage(savedLanguage);
-  }, []);
+    // Create Google Translate element if it doesn't exist
+    if (isOpen && !document.getElementById('google_translate_element')) {
+      const translateDiv = document.createElement('div');
+      translateDiv.id = 'google_translate_element';
+      translateDiv.style.position = 'absolute';
+      translateDiv.style.top = '10px';
+      translateDiv.style.right = '100px';
+      translateDiv.style.zIndex = '1000';
+      document.body.appendChild(translateDiv);
       
-  // Change language function
-  const changeLanguage = (lang) => {
-    setCurrentLanguage(lang);
-    localStorage.setItem('language', lang);
-    // Refresh welcome message
-    if (messages.length === 1 && messages[0].type === MessageType.BOT) {
-      setMessages([
-        {
-          id: Date.now().toString(),
-          type: MessageType.BOT,
-          content: languages[lang].welcome,
-          timestamp: new Date(),
-        },
-      ]);
+      // Load Google Translate script
+      const script = document.createElement('script');
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+      
+      // Initialize Google Translate
+      window.googleTranslateElementInit = function() {
+        new window.google.translate.TranslateElement(
+          { pageLanguage: 'en', layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE },
+          'google_translate_element'
+        );
+      };
+      
+      translateElementRef.current = translateDiv;
+    }
+    
+    // Cleanup function
+    return () => {
+      if (!isOpen && translateElementRef.current) {
+        document.body.removeChild(translateElementRef.current);
+        translateElementRef.current = null;
       }
     };
+  }, [isOpen]);
 
   // Initialize chatbot with welcome message
   useEffect(() => {
@@ -179,14 +94,14 @@ export default function Chatbot() {
           {
             id: Date.now().toString(),
             type: MessageType.BOT,
-            content: languages[currentLanguage].welcome,
+            content: defaultStrings.welcome,
             timestamp: new Date(),
           },
         ])
         setIsTyping(false)
       }, 1000)
     }
-  }, [isOpen, messages.length, currentLanguage])
+  }, [isOpen, messages.length])
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -227,7 +142,7 @@ export default function Chatbot() {
       setTimeout(() => {
         addMessage(
           MessageType.BOT,
-          languages[currentLanguage].enquirySubmitted.replace("{name}", formData.name).replace("{email}", formData.email),
+          defaultStrings.enquirySubmitted.replace("{name}", formData.name).replace("{email}", formData.email),
         )
         setIsTyping(false)
       }, 1000)
@@ -296,16 +211,16 @@ export default function Chatbot() {
       setIsProcessing(false)
       
       if (userInput.includes("product") || userInput.includes("producto") || userInput.includes("produit")) {
-        addMessage(MessageType.PRODUCT, languages[currentLanguage].productIntro)
+        addMessage(MessageType.PRODUCT, defaultStrings.productIntro)
         fetchProducts();
       } else if (userInput.includes("contact") || userInput.includes("contacto") || userInput.includes("contact")) {
-        addMessage(MessageType.CONTACT, languages[currentLanguage].contactInfo)
+        addMessage(MessageType.CONTACT, defaultStrings.contactInfo)
       } else if (userInput.includes("enquiry") || userInput.includes("consulta") || userInput.includes("demande")) {
         setShowEnquiryForm(true)
       } else if (userInput.includes("catalog") || userInput.includes("catálogo") || userInput.includes("catalogue")) {
-        addMessage(MessageType.CATALOG, languages[currentLanguage].downloadCatalog)
+        addMessage(MessageType.CATALOG, defaultStrings.downloadCatalog)
       } else if (userInput.includes("support") || userInput.includes("soporte") || userInput.includes("support")) {
-        addMessage(MessageType.SUPPORT, languages[currentLanguage].supportTeam)
+        addMessage(MessageType.SUPPORT, defaultStrings.supportTeam)
       } else if (userInput.includes("language") || userInput.includes("idioma") || userInput.includes("langue")) {
         addMessage(
           MessageType.BOT,
@@ -320,7 +235,7 @@ export default function Chatbot() {
       } else {
         addMessage(
           MessageType.BOT,
-          languages[currentLanguage].notUnderstood,
+          defaultStrings.notUnderstood,
         )
       }
     }, 1500)
@@ -335,6 +250,10 @@ export default function Chatbot() {
 
   const toggleSize = () => {
     setIsLarge(!isLarge)
+  }
+
+  const toggleTts = () => {
+    setIsTtsEnabled(!isTtsEnabled)
   }
 
   return (
@@ -373,18 +292,20 @@ export default function Chatbot() {
                     <h2 className="font-semibold text-foreground">SwanSorter Assistant</h2>
                   </div>
                   <div className="flex items-center space-x-2">
-                  {/* Language selector */}
-                  <div className="mr-2">
-                    <select 
-                      value={currentLanguage}
-                      onChange={(e) => changeLanguage(e.target.value)}
-                      className="bg-secondary text-foreground border border-primary/30 rounded p-1 text-sm"
+                    {/* Google Translate Element */}
+                    <div id="google_translate_element" className="mr-2"></div>
+                    
+                    {/* Text-to-Speech Toggle */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleTts}
+                      className={`text-foreground hover:text-primary hover:bg-secondary ${isTtsEnabled ? 'text-primary' : ''}`}
+                      aria-label={isTtsEnabled ? "Disable text-to-speech" : "Enable text-to-speech"}
                     >
-                      <option value="en">🇺🇸 EN</option>
-                      <option value="es">🇪🇸 ES</option>
-                      <option value="fr">🇫🇷 FR</option>
-                    </select>
-                  </div>
+                      {isTtsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                    </Button>
+                    
                     <Button
                       variant="ghost"
                       size="icon"
@@ -419,7 +340,7 @@ export default function Chatbot() {
                           {isLoadingProducts ? (
                             <div className="flex justify-center items-center py-4">
                               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                              <span className="ml-2 text-foreground">{languages[currentLanguage].loadingProducts}</span>
+                              <span className="ml-2 text-foreground">{defaultStrings.loadingProducts}</span>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -451,7 +372,7 @@ export default function Chatbot() {
                                         );
                                           }}
                                         >
-                                          {languages[currentLanguage].learnMore}
+                                          {defaultStrings.learnMore}
                                         </Button>
 
                                       </div>
@@ -484,7 +405,7 @@ export default function Chatbot() {
                                 window.open('tel:+15551234567', '_blank');
                             }}
                           >
-                            {languages[currentLanguage].callNow}
+                            {defaultStrings.callNow}
                           </Button>
                           </div>
                         </div>
@@ -492,7 +413,7 @@ export default function Chatbot() {
                         <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
                           <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
                           <p className="text-foreground mb-3">
-                            {languages[currentLanguage].catalogDesc}
+                            {defaultStrings.catalogDesc}
                           </p>
                           <Button 
                             variant="outline" 
@@ -510,14 +431,13 @@ export default function Chatbot() {
                             }}
                           >
                             <Download className="h-4 w-4 mr-2" />
-                            {languages[currentLanguage].downloadPDF}
+                            {defaultStrings.downloadPDF}
                           </Button>
                         </div>
                       ) : message.type === MessageType.SUPPORT ? (
                         <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
                           <h3 className="font-semibold text-primary mb-2">{message.content}</h3>
                           <p className="text-foreground mb-3">
-                            {languages[currentLanguage].supportDesc}
                           </p>
                           <div className="flex space-x-2">
                             <Button 
@@ -528,7 +448,6 @@ export default function Chatbot() {
                               }}
                             >
                               <Phone className="h-4 w-4 mr-2" />
-                              {languages[currentLanguage].callNow}
                             </Button>
                             <Button 
                               variant="outline"
@@ -542,7 +461,6 @@ export default function Chatbot() {
                               }}
                             >
                               <MessageCircle className="h-4 w-4 mr-2" />
-                              {languages[currentLanguage].liveChat}
                             </Button>
                           </div>
                         </div>
@@ -579,11 +497,9 @@ export default function Chatbot() {
                   {/* Enquiry form */}
                   {showEnquiryForm && (
                     <div className="bg-secondary/50 rounded-lg p-4 max-w-[85%] neon-border">
-                      <h3 className="font-semibold text-primary mb-3">{languages[currentLanguage].submitEnquiry}</h3>
                       <div className="space-y-3">
                         <div>
                           <Label htmlFor="name" className="text-foreground">
-                            {languages[currentLanguage].name} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="name"
@@ -596,7 +512,6 @@ export default function Chatbot() {
                         </div>
                         <div>
                           <Label htmlFor="email" className="text-foreground">
-                            {languages[currentLanguage].email} <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="email"
@@ -610,7 +525,6 @@ export default function Chatbot() {
                         </div>
                         <div>
                           <Label htmlFor="phone" className="text-foreground">
-                            {languages[currentLanguage].phone}
                           </Label>
                           <Input
                             id="phone"
@@ -623,7 +537,6 @@ export default function Chatbot() {
                         </div>
                         <div>
                           <Label htmlFor="message" className="text-foreground">
-                            {languages[currentLanguage].message} <span className="text-red-500">*</span>
                           </Label>
                           <Textarea
                             id="message"
@@ -641,10 +554,8 @@ export default function Chatbot() {
                             onClick={() => setShowEnquiryForm(false)}
                             className="border-primary/30 text-foreground hover:bg-secondary"
                           >
-                            {languages[currentLanguage].cancel}
                           </Button>
                           <Button onClick={handleSubmitEnquiry} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                            {languages[currentLanguage].submit}
                           </Button>
                         </div>
                       </div>
@@ -662,7 +573,7 @@ export default function Chatbot() {
                       value={input}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      placeholder={languages[currentLanguage].typeMessage}
+                      placeholder={defaultStrings.typeMessage}
                       className="bg-secondary/30 border-primary/30 text-foreground"
                       disabled={isProcessing}
                     />

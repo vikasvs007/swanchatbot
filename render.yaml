@@ -2,11 +2,13 @@ services:
   - type: web
     name: swanchatbot
     env: static
-    buildCommand: npm install && npm run build
+    buildCommand: chmod +x node_modules/.bin/react-scripts && npm install && CI=false npm run build
     staticPublishPath: ./build
     envVars:
       - key: NODE_VERSION
-        value: 16
+        value: 18.x
+      - key: NODE_ENV
+        value: production
     headers:
       - path: /*
         name: Cache-Control
